@@ -15,7 +15,7 @@ target_link_libraries(ahrs Eigen3::Eigen)
 
 pkg_check_modules(CPPUTEST REQUIRED cpputest)
 
-add_executable(test_ahrs test/test_dcm.cpp test/test_quaternion.cpp)
+add_executable(test_ahrs test/test_ahrs.cpp test/test_dcm.cpp test/test_quaternion.cpp)
 target_include_directories(test_ahrs PRIVATE ${CPPUTEST_INCLUDE_DIRS})
 target_link_libraries(test_ahrs PRIVATE ahrs ${CPPUTEST_LDFLAGS})
 
