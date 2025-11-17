@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include <cassert>
 
-namespace ahrs {
+namespace AHRS {
   using namespace Eigen;
 
   DCM::DCM() : R_(Matrix3f::Identity()) {}

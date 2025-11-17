@@ -2,7 +2,7 @@
 #include "CppUTest/CommandLineTestRunner.h"
 #include "CppUTest/TestHarness.h"
 
-namespace ahrs {
+namespace AHRS {
   using namespace Eigen;
 
   TEST_GROUP(TEST_DCM) {

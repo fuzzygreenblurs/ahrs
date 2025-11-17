@@ -9,7 +9,7 @@
   * phttps://lisyarus.github.io/blog/posts/introduction-to-quaternions.html#section-some-notes-on-the-formula
   */
 
-namespace ahrs {
+namespace AHRS {
   class Quaternion {
     public:
       static constexpr float TOLERANCE = 1e-6f;

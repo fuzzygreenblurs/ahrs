@@ -2,7 +2,7 @@
 #include "math/dcm.h"
 #include <cassert>
 
-namespace ahrs {
+namespace AHRS {
   using namespace Eigen;
 
   Quaternion::Quaternion() : w_(1.0f), x_(0.0f), y_(0.0f), z_(0.0f) {};

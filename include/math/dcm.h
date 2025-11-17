@@ -4,7 +4,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense> 
 
-namespace ahrs {
+namespace AHRS {
   class DCM {
     public:
       static constexpr float TOLERANCE = 1e-4f;

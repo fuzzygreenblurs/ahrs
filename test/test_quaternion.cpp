@@ -3,7 +3,7 @@
 #include "CppUTest/TestHarness.h"
 #include <iostream>
 
-namespace ahrs {
+namespace AHRS {
   using namespace Eigen;
 
   TEST_GROUP(QUATERNION) {};
