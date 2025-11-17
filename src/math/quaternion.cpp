@@ -23,6 +23,15 @@ namespace AHRS {
     return conjugate();
   }
 
+  Quaternion Quaternion::operator+(const Quaternion& q) const {
+    return Quaternion(
+      w_+q.w_,
+      x_+q.x_,
+      y_*q.y_,
+      z_*q.z_
+    );
+  } 
+
   Quaternion Quaternion::operator*(const Quaternion& q) const {
     return Quaternion(
       w_*q.w_ - x_*q.x_ - y_*q.y_ - z_*q.z_,  // w

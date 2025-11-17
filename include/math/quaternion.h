@@ -23,6 +23,7 @@ namespace AHRS {
       DCM to_dcm() const;
 
       Quaternion operator*(const Quaternion& q) const;
+      Quaternion operator+(const Quaternion& q) const;
       Quaternion conjugate() const;
       Quaternion inv() const;
 
@@ -31,13 +32,14 @@ namespace AHRS {
       float norm() const;
       Eigen::Vector3f rotate(const Eigen::Vector3f& vec) const;
 
-      double w() const { return w_; }
-      double x() const { return x_; }
-      double y() const { return y_; }
-      double z() const { return z_; }
+      float w() const { return data__; }
+      float x() const { return x_; }
+      float y() const { return y_; }
+      float z() const { return z_; }
 
     private:
-      double w_, x_, y_, z_;  
+      Eigen::Vector4f data_;
+      Eigen::Vector4f to_vec4() const { return data_ };
   };
 }
 

@@ -8,6 +8,8 @@
 namespace AHRS {
   class MadgwickFilter : public IAttitudeEstimator {
     public:
+      MadgwickFilter(float beta= 0.1f); 
+
       void update(const Eigen::Vector3f& gyro,
                   const Eigen::Vector3f& accel,
                   const float dt) override;
@@ -18,7 +20,12 @@ namespace AHRS {
 
     private:
       Quaternion q_;
-      float B_; 
+      float beta_;
+
+      Eigen::Vector4f predict(const Eigen::Vector3f& gyro) const;
+      Eigen::Vector4f correct(const Eigen::Vector3f& accel) const;
+      Eigen::Vector3f g_vec_error(const Eigen::Vector3f& accel) const;
+      Eigen::Matrix<float, 3, 4> jacobian() const;
   };
 }
 
