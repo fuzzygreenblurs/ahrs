@@ -2,7 +2,7 @@
 #define QUATERNION_H
 
 #include <Eigen/Dense>
-#include "dcm.h"
+#include "math/dcm.h"
 
 /*
   * note: Vector3 representations are compact but always have singularities

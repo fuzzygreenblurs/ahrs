@@ -1,4 +1,4 @@
-#include "quaternion.h"
+#include "math/quaternion.h"
 #include "CppUTest/CommandLineTestRunner.h"
 #include "CppUTest/TestHarness.h"
 #include <iostream>

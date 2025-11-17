@@ -1,4 +1,4 @@
-#include "dcm.h"
+#include "math/dcm.h"
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <cassert>

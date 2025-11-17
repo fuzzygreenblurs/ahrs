@@ -9,13 +9,24 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(PkgConfig REQUIRED)            
 
-add_library(ahrs src/madgwick.cpp src/dcm.cpp src/quaternion.cpp)
+add_library(ahrs 
+  src/filters/madgwick.cpp 
+  src/math/dcm.cpp 
+  src/math/quaternion.cpp
+)
+
 target_include_directories(ahrs PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(ahrs Eigen3::Eigen)
 
 pkg_check_modules(CPPUTEST REQUIRED cpputest)
 
-add_executable(test_ahrs test/test_ahrs.cpp test/test_dcm.cpp test/test_quaternion.cpp)
+add_executable(test_ahrs 
+  test/test_ahrs.cpp 
+  test/test_dcm.cpp 
+  test/test_quaternion.cpp
+  src/filters/madgwick.cpp
+)
+
 target_include_directories(test_ahrs PRIVATE ${CPPUTEST_INCLUDE_DIRS})
 target_link_libraries(test_ahrs PRIVATE ahrs ${CPPUTEST_LDFLAGS})
 

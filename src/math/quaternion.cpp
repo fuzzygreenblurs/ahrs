@@ -1,5 +1,5 @@
-#include "quaternion.h"
-#include "dcm.h"
+#include "math/quaternion.h"
+#include "math/dcm.h"
 #include <cassert>
 
 namespace ahrs {

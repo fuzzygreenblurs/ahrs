@@ -1,4 +1,4 @@
-#include "dcm.h"
+#include "math/dcm.h"
 #include "CppUTest/CommandLineTestRunner.h"
 #include "CppUTest/TestHarness.h"
 
