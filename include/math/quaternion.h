@@ -15,7 +15,7 @@ namespace AHRS {
       static constexpr float TOLERANCE = 1e-6f;
 
       Quaternion();
-      Quaternion(float w, float x, float y, float z);
+      Quaternion(const Eigen::Vector4f& v);
     
       static Quaternion eye();
       static Quaternion from_axis_angle(const Eigen::Vector3f& axis, float angle);
@@ -32,15 +32,18 @@ namespace AHRS {
       float norm() const;
       Eigen::Vector3f rotate(const Eigen::Vector3f& vec) const;
 
-      float w() const { return data__; }
-      float x() const { return x_; }
-      float y() const { return y_; }
-      float z() const { return z_; }
+      Eigen::Vector3f to_euler_zyx() const;
+
+      float w() const { return data_(0); }
+      float x() const { return data_(1); }
+      float y() const { return data_(2); }
+      float z() const { return data_(3); }
 
     private:
       Eigen::Vector4f data_;
-      Eigen::Vector4f to_vec4() const { return data_ };
+      Eigen::Vector4f to_vec4() const { return data_; };
   };
 }
 
 #endif
+

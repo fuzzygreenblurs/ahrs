@@ -14,19 +14,13 @@ namespace AHRS {
     Vector4f q_dot_pred = predict(gyro);
     Vector4f q_dot_corr = correct(accel);
     Vector4f q_dot      = q_dot_pred - (beta_ * q_dot_corr);
-    
-    Vector4f q_updated  = q_
 
-    q_ = Quaternion(
-      q_.w() + (dt * q_dot(0)),
-      q_.x() + (dt * q_dot(1)),
-      q_.y() + (dt * q_dot(2)),
-      q_.z() + (dt * q_dot(3))
-    );
+    q_ = q_ + Quaternion(dt * q_dot);
+    q_.normalize();
   }
 
   Vector4f MadgwickFilter::predict(const Vector3f& gyro) const {
-    Quaternion w(0, gyro(0), gyro(1), gyro(2));
+    Quaternion w(Vector4f(0, gyro(0), gyro(1), gyro(2)));
     Quaternion prod = q_ * w;
     return 0.5f * Eigen::Vector4f(prod.w(), 
                                   prod.x(), 
@@ -78,11 +72,12 @@ namespace AHRS {
   }
 
 
-  Quaternion MadgwickFilter::get_orientation() const {
-    return q_;
-  }
+//  Quaternion MadgwickFilter::get_orientation() const {
+//    return q_;
+//  }
 
   Vector3f MadgwickFilter::get_euler() const {
     // convert quaternion to euler angles
+    return q_.to_euler_zyx();
   }
 }

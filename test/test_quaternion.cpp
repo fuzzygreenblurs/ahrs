@@ -25,7 +25,7 @@ namespace AHRS {
   }
   
   TEST(QUATERNION, hamiltonian_product) {
-    Quaternion q(0.5f, 0.5f, 0.5f, 0.5f);
+    Quaternion q(Vector4f(0.5f, 0.5f, 0.5f, 0.5f));
     Quaternion eye = Quaternion::eye();
     Quaternion prod = q * eye;
 
@@ -36,7 +36,7 @@ namespace AHRS {
   }
 
   TEST(QUATERNION, conjugate) {
-    Quaternion q(0.5f, 0.5f, 0.5f, 0.5f);
+    Quaternion q(Vector4f(0.5f, 0.5f, 0.5f, 0.5f));
     Quaternion conj = q.conjugate();
 
     CHECK_EQUAL(q.w(), conj.w());
@@ -46,7 +46,7 @@ namespace AHRS {
   }
 
   TEST(QUATERNION, invert) {
-    Quaternion q(0.5f, 0.5f, 0.5f, 0.5f);
+    Quaternion q(Vector4f(0.5f, 0.5f, 0.5f, 0.5f));
     Quaternion q_inv = q.inv();
     Quaternion prod = q * q_inv;
 
@@ -60,7 +60,7 @@ namespace AHRS {
     // yaw by 90deg (about Z)
     float s = sin(M_PI/4);
     float c = sin(M_PI/4);
-    Quaternion q(c, 0, 0, s);
+    Quaternion q(Vector4f(c, 0, 0, s));
   
     Vector3f v(1, 0, 0);
     Vector3f res = q.rotate(v);
@@ -88,20 +88,20 @@ namespace AHRS {
   }
 
   TEST(QUATERNION, compute_length) {
-    Quaternion q(0.5f, 0.5f, 0.5f, 0.5f);
+    Quaternion q(Vector4f(0.5f, 0.5f, 0.5f, 0.5f));
     float norm = q.norm();
     DOUBLES_EQUAL(1.0f, norm, Quaternion::TOLERANCE);
   }
 
   TEST(QUATERNION, normalize_in_place) {
-    Quaternion q(2, 0, 0, 0);
+    Quaternion q(Vector4f(2, 0, 0, 0));
     q.normalize();
     DOUBLES_EQUAL(1.0f, q.w(), Quaternion::TOLERANCE);
     DOUBLES_EQUAL(1.0f, q.norm(), Quaternion::TOLERANCE);
   }
 
   TEST(QUATERNION, generate_normalized_duplicate) {
-    Quaternion q(2, 0, 0, 0);
+    Quaternion q(Vector4f(2, 0, 0, 0));
     Quaternion dup = q.normalized_dup();
     DOUBLES_EQUAL(2.0f, q.w(), Quaternion::TOLERANCE);
     DOUBLES_EQUAL(1.0f, dup.w(), Quaternion::TOLERANCE);
@@ -112,7 +112,7 @@ namespace AHRS {
     float s = sin(M_PI/4);
     float c = cos(M_PI/4);
 
-    Quaternion q(c, 0, 0, s);
+    Quaternion q(Vector4f(c, 0, 0, s));
     DCM R = q.to_dcm();
 
     Matrix3f expected; 
