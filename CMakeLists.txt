@@ -13,6 +13,7 @@ add_library(ahrs
   src/filters/madgwick.cpp 
   src/math/dcm.cpp 
   src/math/quaternion.cpp
+  src/data/test_source.cpp
 )
 
 target_include_directories(ahrs PUBLIC ${PROJECT_SOURCE_DIR}/include)
@@ -24,6 +25,7 @@ add_executable(test_ahrs
   test/test_ahrs.cpp 
   test/test_dcm.cpp 
   test/test_quaternion.cpp
+  test/test_madgwick.cpp
   src/filters/madgwick.cpp
 )
 

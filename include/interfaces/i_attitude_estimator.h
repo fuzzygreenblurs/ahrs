@@ -7,12 +7,12 @@
 namespace AHRS {
   class IAttitudeEstimator {
     public:
+      float dt = 0.01f;
       virtual ~IAttitudeEstimator() = default;
 
       // 6DOF: for all IMUs
       virtual void update(const Eigen::Vector3f& gyro,
-                          const Eigen::Vector3f& accel,
-                          const float dt) = 0;
+                          const Eigen::Vector3f& accel) = 0;
 
       // 9DOF: optional for added yaw 
       virtual void update(const Eigen::Vector3f& gyro,

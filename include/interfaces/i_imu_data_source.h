@@ -5,7 +5,7 @@
 
 namespace AHRS {
   struct IMUReading {
-    double timestamp;
+    float timestamp;
     Eigen::Vector3f gyro;
     Eigen::Vector3f accel;
     Eigen::Vector3f mag;

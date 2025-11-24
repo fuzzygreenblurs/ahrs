@@ -17,7 +17,7 @@ namespace AHRS {
   }
 
   TEST(QUATERNION, create_eye_quaternion) { 
-    Quaternion q = Quaternion::eye();
+Quaternion q = Quaternion::eye();
     CHECK(q.w() == 1.0f);
     CHECK(q.x() == 0.0f);
     CHECK(q.y() == 0.0f);
