@@ -8,7 +8,8 @@ namespace AHRS {
   MadgwickFilter::MadgwickFilter(float beta) : q_(), beta_(beta) {}
 
   void MadgwickFilter::update(const Vector3f& gyro,
-                              const Vector3f& accel) {
+                              const Vector3f& accel,
+                              const float dt) {
       
     Vector4f q_dot_pred = prediction(gyro);
     Vector4f q_dot_corr = correction(accel);

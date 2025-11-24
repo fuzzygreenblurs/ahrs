@@ -11,7 +11,8 @@ namespace AHRS {
       MadgwickFilter(float beta= 0.1f); 
 
       void update(const Eigen::Vector3f& gyro,
-                  const Eigen::Vector3f& accel) override;
+                  const Eigen::Vector3f& accel,
+                  const float dt) override;
       
       bool supports_mag() const override { return false; }
       Quaternion get_orientation() const override;
