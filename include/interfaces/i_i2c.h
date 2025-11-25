@@ -1,6 +1,7 @@
 #ifndef I_I2C_H
 #define I_I2C_H
 
+#include <cstdint>
 
 namespace AHRS {
   class II2C {

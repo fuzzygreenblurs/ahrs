@@ -1,8 +1,9 @@
 #include "cmsis_i2c.h"
+#include <cstdint>
 
 namespace mcal {
   void CMSIS_I2C::init() {
-    disable_peripheral()
+    disable_peripheral();
 
     en_clks();
     reset();
@@ -14,14 +15,37 @@ namespace mcal {
     wait_to_stabilize();
   }
 
-  void en_clks() {
-    // enable GPIOB, DMA1 and I2C1 clks to power peripherals
-    RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;       // RM0090: 6.3.13: bit 21  
-    RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;       // RM0090: 6.3.10: bit 21
-    RCC->APB1ENR |= RCC_AHB1ENR_GPIOBEN;      // RM0090: 6.3.10: bit 1 
+  bool CMSIS_I2C::ping(std::uint8_t addr) {
+    I2C1->CR1 |= (1 << 8);                          // set START bit
+
+    uint32_t timeout = 10000;
+    while(!(I2C1->SR1 & (1 << 0)) && timeout > 0) { // wait for START condition to be set
+      timeout--;
+    }
+    if(timeout == 0) return 0;                       // START failed
+
+    I2C1->DR = addr << 1;                            // send 7 bit addr
+    timeout = 10000;
+    while(!(I2C1->SR1 & (1 << 1)) && timeout > 0) {  // wait for addr to be sent and ACK response
+      timeout--;
+    }
+
+    bool dev_found = ( timeout > 0 ) ? 1 : 0;
+    if(dev_found) (void)I2C1->SR2;                    // clear ADDR flag if device responds
+
+    I2C1->CR1 |= (1 << 9);                            // always cleanup with STOP bit
+    return dev_found;
+
   }
 
-  void setup_pins() {
+  void CMSIS_I2C::en_clks() {
+    // enable GPIOB, DMA1 and I2C1 clks to power peripherals
+    RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;       // RM0090: 6.3.13: bit 21
+    RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;       // RM0090: 6.3.10: bit 21
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;      // RM0090: 6.3.10: bit 1 
+  }
+
+  void CMSIS_I2C::setup_pins() {
     // set pins pb6/7 to AF (alt func) mode
     // RM0090: 8.4.1 
     GPIOB->MODER &= ~((3 << 12) | (3 << 14)); // clear target bits
@@ -42,14 +66,107 @@ namespace mcal {
     // RM0090: 27.6.1/2: bit 0 to disable peripheral
     I2C1->CR1 = 0;
     I2C1->CR2 = 42;
-    
   }
 
-  void set_fast_mode() {
+  std::uint8_t CMSIS_I2C::read_reg(std::uint8_t dev_addr,
+                                   std::uint8_t reg_addr) {
+
+    send_start();
+    send_addr(dev_addr, false);      // WRITE phase: "read from reg addr"  
+    
+    I2C1->DR = reg_addr;
+    while(!(wait_for_flag(1 << 2)));  // wait for TxE
+  
+    send_start();
+    send_addr(dev_addr, true);        // READ phase: read single byte
+    I2C1->CR1 &= ~(1 << 10);          // disable ACK for a single byte
+    send_stop();
+
+    wait_for_flag(1 << 6);            // wait for RxE
+    std::uint8_t data = I2C1->DR;
+    I2C1->CR1 |= (1 << 10);            // re-enable ACK
+    
+    return data;
+  }
+
+  void CMSIS_I2C::write_reg(std::uint8_t dev_addr,
+                            std::uint8_t reg_addr,
+                            std::uint8_t value) {
+
+    send_start();
+    send_addr(dev_addr, false);
+
+    I2C1->DR = reg_addr;
+    while(!(wait_for_flag(1 << 2)));  // wait for TxE
+
+    I2C1->DR = value;
+    while(!(wait_for_flag(1 << 2)));  // wait for TxE 
+
+    send_stop();
+  }
+
+  bool CMSIS_I2C::read_burst(std::uint8_t dev_addr,
+                             std::uint8_t reg_addr,
+                             std::uint8_t* buffer,
+                             std::uint16_t length) {
+
+    if(length == 0) return false;
+
+    uint32_t timeout;
+
+    // disable and reconfigure DMA for this transfer
+    DMA1_Stream0->CR &= ~(1 << 0);                        // disable DMA
+    timeout = 10000;
+    while((DMA1_Stream0->CR & (1 << 0)) && timeout > 0) timeout--;
+    if(timeout == 0) return false; // DMA disable failed
+
+    // clear all DMA flags
+    DMA1->LIFCR |= (0x3F << 0);                           // clear all Stream0 flags
+
+    // reconfigure DMA addresses and count
+    DMA1_Stream0->M0AR = (uint32_t)buffer;
+    DMA1_Stream0->NDTR = length;
+
+    // reset and configure I2C for DMA reception
+    I2C1->CR2 &= ~(1 << 11);                               // disable DMA first
+    I2C1->CR2 &= ~(1 << 12);                               // clear LAST bit
+    I2C1->CR1 |= (1 << 10);                                // enable ACK
+
+    if(length == 1) {
+      I2C1->CR1 &= ~(1 << 10);                             // disable ACK for single byte
+    } else {
+      I2C1->CR2 |= (1 << 12);                              // set LAST bit for multi-byte
+    } 
+
+    I2C1->CR2 |= (1 << 11);                                 // enable DMA requests
+    
+    // write: signal desired register to read from
+    send_start();
+    send_addr(dev_addr, false);
+    I2C1->DR = reg_addr;
+    while(wait_for_flag(1 << 2));
+
+    // read: DMA handles data reception/initial storage
+    send_start();
+    send_addr(dev_addr, true);
+    while(!(DMA1->LISR & (1 << 5)));                         // TC1F0
+    DMA1->LIFCR |= (1 << 5);                                 // clear TC1F0
+
+    send_stop();
+
+    DMA1_Stream0->CR &= ~(1 << 0);
+    I2C1->CR2 &= ~(1 << 11);
+
+    return true;
+  }
+
+  void CMSIS_I2C::set_fast_mode() {
     // TODO: review this math
 
     /*
     TIMINGR: controls bus timing characteristics
+      I2C1->TIMINGR = 0x00503D5A;
+
     ex: how long clock high/low periods last, setup/hold times, etc.
 
     TIMINGR bit fields (32-bit register):
@@ -71,17 +188,17 @@ namespace mcal {
       period: 42MHz / 400kHz = 105 APB1 cycles per I2C cycle
       split: ~61 cycles high + 90 cycles low = 151 total (includes overhead)
       setup/hold times: Meet I2C fast-mode specs 
-  */
-  
-  // fast mode (bit 15) + 400kHz (42MHz / (3 × 35) ≈ 400kHz)
-  I2C1->CCR = (1 << 15) | 35;   
-  I2C1->TRISE = 14;
-  
-  // I2C1->TIMINGR = 0x00503D5A;
+    */ 
+
+    // fast mode (bit 15) + 400kHz (42MHz / (3 × 35) ≈ 400kHz)
+    I2C1->CCR = (1 << 15) | 35;   
+    I2C1->TRISE = 14;
+    
   }
 
-  void init_dma() {
 
+  void CMSIS_I2C::init_dma() {
+    //TODO: review all logic 
     DMA1_Stream0->CR &= ~(1 << 0);                 // disable stream first
     while(DMA1_Stream0->CR & (1 << 0));            // wait until disabled
 
@@ -118,26 +235,42 @@ namespace mcal {
     I2C1->CR1 |= (1 << 0);
   }
 
-  void reset() {
+  void CMSIS_I2C::reset() {
     //RM0090: 27.6.1: SWRST
-    I2C->CR1 |= (1 << 15);
+    I2C1->CR1 |= (1 << 15);
     wait_to_stabilize();
-    I2C->CR1 &= ~(1 << 15);
+    I2C1->CR1 &= ~(1 << 15);
   }
 
-  void wait_to_stabilize() {
+  void CMSIS_I2C::wait_to_stabilize() {
     for(volatile std::uint32_t i = 0; i < 1000; i++); 
   }
 
-  void send_start() {
+  void CMSIS_I2C::send_start() {
     uint32_t timeout = 10000;
 
-    I2C1->CR1 |= (1 << 8); // send start bit
-    while(!(I2C1->SR1 & (1 << 0)) && timeout > 0) timeout--;
+    I2C1->CR1 |= (1 << 8);
+    while(!(wait_for_flag(1 << 0)) && timeout > 0) timeout--;
     if(timeout == 0) return;
   }
 
-  void send_address()
+  void CMSIS_I2C::send_stop() {
+    I2C1->CR1 |= (1 << 9);  
+  }
+  
+  bool CMSIS_I2C::wait_for_flag(std::uint32_t flag) {
+    while(!(I2C1->SR1 & flag));
 
+    return true;
+  }
+  
+  void CMSIS_I2C::send_addr(std::uint8_t addr, bool read) {
+    I2C1->DR = (addr << 1) | (read ? 1 : 0);
+    wait_for_flag(1 << 1);
+
+    // clear addr by reading SR1 and then SR2. TODO: review why
+    (void)I2C1->SR1;
+    (void)I2C1->SR2;
+  }
 }
 
