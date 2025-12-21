@@ -9,6 +9,8 @@ namespace mcal {
     public:
       CMSIS_I2C() = default;
 
+      void init();
+
       std::uint8_t read_reg(std::uint8_t dev_addr,
                             std::uint8_t reg_addr) override;
 
@@ -24,15 +26,12 @@ namespace mcal {
     private:
       void disable_peripheral();
       void en_peripheral();
-      void init();
       void init_dma();
       void en_clks();
       void setup_pins();
       void set_fast_mode();
       void reset();
       void wait_to_stabilize();
-      bool ping();
-      std::uint8_t dev_present(std::uint8_t dev_addr);
       
       void send_start();
       void send_addr(std::uint8_t addr, bool read);
