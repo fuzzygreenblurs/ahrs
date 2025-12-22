@@ -14,13 +14,15 @@ namespace AHRS {
                           const Eigen::Vector3f& accel,
                           const float dt) = 0;
 
-      // 9DOF: optional for added yaw 
+      // 9DOF: optional for added yaw
       virtual void update(const Eigen::Vector3f& gyro,
-                          const Eigen::Vector3f& accel, 
+                          const Eigen::Vector3f& accel,
                           const Eigen::Vector3f& mag,
                           const float dt) {
-
-        throw std::runtime_error("magnetometer fusion not supported.");
+    
+        // default: ignore magnetometer (for 6DOF-only filters)
+        (void)mag;
+        update(gyro, accel, dt);
       }
      
       virtual bool supports_mag() const = 0;
