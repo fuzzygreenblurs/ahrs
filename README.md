@@ -1,4 +1,4 @@
-## 6-DOF (Degree-of-Freedom) Bare-Metal Attitude Estimator
+## 6-DOF (Degree-of-Freedom) Attitude Estimator
 
 This project is a first-principles design and implementation of a real-time Attitude Heading Reference System (AHRS), representing the state estimator for a self-stabilizing drone flight control loop. The system compares the performance of a Madgwick orientation filter and an Extended Kalman Filter, fusing 3-axis gyroscope and accelerometer sensor modalities to estimate 3D orientation. Quaternion representation is used to avoid gimbal lock singularities. Mathematical justification for these approaches can be found in the [project report](./6dof_attitude_estimation.pdf).
 
